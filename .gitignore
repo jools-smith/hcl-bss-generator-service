@@ -1,7 +1,10 @@
 
-generated/
-WebContent/
-dist/
-.idea/
-
 *.iml
+/generated/
+/dist/
+/.idea/
+/${env.TOMCAT_HOME}/
+/build/
+
+/hcl-services.war
+/hcl-services.zip
