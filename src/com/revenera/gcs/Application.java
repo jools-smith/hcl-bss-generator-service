@@ -64,8 +64,8 @@ public class Application implements ServletContextListener {
 
     logger.me(this);
 
-    this.build = "1000";
-    this.version = "2025.01.24";
+    this.build = "1001";
+    this.version = "2025.01.28";
 
     singleton.getAndSet(this);
 
