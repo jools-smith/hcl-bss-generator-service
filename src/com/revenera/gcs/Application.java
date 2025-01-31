@@ -7,11 +7,16 @@ import com.revenera.gcs.utils.Diagnostics;
 import com.revenera.gcs.utils.GeneratorImplementor;
 import com.revenera.gcs.utils.Log;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -21,8 +26,15 @@ import java.util.concurrent.atomic.AtomicReference;
 public class Application implements ServletContextListener {
   private static final Log logger = Log.create(Application.class);
 
+  private String executable;
+
   /** instance */
   private static final AtomicReference<Application> singleton = new AtomicReference<>();
+
+  public static Application singleton() {
+    return singleton.get();
+  }
+
   public static Application getInstance() {
     return singleton.get();
   }
@@ -64,12 +76,17 @@ public class Application implements ServletContextListener {
 
     logger.me(this);
 
-    this.build = "1001";
-    this.version = "2025.01.28";
+    this.build = "1010";
+    this.version = "2025.01.31";
 
     singleton.getAndSet(this);
 
     logger.log(Log.Level.info, String.format("version | %s | %s", version, build));
+  }
+
+
+  public Path getResourcePath(final String...parts) {
+    return Paths.get(this.executable, parts);
   }
 
   @Override
@@ -78,6 +95,9 @@ public class Application implements ServletContextListener {
 
     try {
       logAttributeNames(event);
+
+      this.executable = event.getServletContext().getRealPath("/WEB-INF");
+      logger.array(Log.Level.info, "resources", getResourcePath());;
 
       final AnnotationManager manager = new AnnotationManager();
 

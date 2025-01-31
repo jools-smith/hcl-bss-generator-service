@@ -13,8 +13,8 @@
     <property name="generated" location="${BASE}/generated"/>
     <property name="generated-src" location="${BASE}/generated/src"/>
     <property name="schema-loc" location="${BASE}/schema"/>
-    <property name="warfile" location="${BASE}/hcl-tech.war"/>
-    <property name="zipped-sources" location="${BASE}/hcl-tech.zip"/>
+    <property name="warfile" location="${BASE}/../hcltech-services.war"/>
+    <property name="zipped-sources" location="${BASE}/../hcltech-services.zip"/>
 
     <path id="licservice.classpath">
         <fileset dir="${BASE}/WebContent/WEB-INF/lib">
