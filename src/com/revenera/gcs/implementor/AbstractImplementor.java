@@ -1,24 +1,23 @@
 package com.revenera.gcs.implementor;
 
-import com.flexnet.external.type.LicenseFileDefinition;
-import com.flexnet.external.type.LicenseFileMapItem;
-import com.flexnet.external.type.PingRequest;
-import com.flexnet.external.type.PingResponse;
+import com.flexnet.external.type.*;
+import com.flexnet.external.webservice.keygenerator.LicGeneratorException;
 import com.revenera.gcs.utils.Log;
 import com.revenera.gcs.Application;
 import com.flexnet.external.webservice.keygenerator.LicenseGeneratorServiceInterface;
 import com.revenera.gcs.utils.Utils;
 
-import javax.servlet.ServletContext;
-import java.net.URL;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public abstract class AbstractImplementor implements LicenseGeneratorServiceInterface {
 
@@ -81,6 +80,11 @@ public abstract class AbstractImplementor implements LicenseGeneratorServiceInte
 
       logger.array(Log.Level.info, "process", "finished", process.exitValue(),
                    Duration.between(now, Instant.now()),toString());
+
+
+      try (InputStream fileStream = Files.newInputStream(filepath, StandardOpenOption.DELETE_ON_CLOSE)) {
+        logger.log(Log.Level.info, "opened license file");
+      }
     }
     catch (final Throwable t) {
       logger.exception(t);
@@ -104,12 +108,69 @@ public abstract class AbstractImplementor implements LicenseGeneratorServiceInte
                                  logger.type().getSimpleName(),
                                  Application.getInstance().getVersionDate(),
                                  Application.getInstance().getBuildSequence(),
-                                 technologyName());
+                                 technologyId());
 
         this.processedTime = Instant.now().toString();
       }
     };
   }
 
+  @Override
+  public Status validateProduct(final ProductRequest product) throws LicGeneratorException {
+    return new Status() {
+      {
+        this.message = "product is validated | " + product.getName() + " | " + product.getVersion();
+        this.code = 0;
+      }
+    };
+  }
+
+  @Override
+  public Status validateLicenseModel(final LicenseModelRequest model) throws LicGeneratorException {
+    return new Status() {
+      {
+        this.message = "license model is validated | " + model.getName();
+        this.code = 0;
+      }
+    };
+  }
+
+  @Override
+  public ConsolidatedLicense consolidateFulfillments(final FulfillmentRecordSet fulfillmentRecordset) throws LicGeneratorException {
+    final String license = fulfillmentRecordset.getFulfillments().stream().flatMap(fulfilment -> fulfilment.getLicenseFiles().stream()).filter(lfd -> String.class.isAssignableFrom(lfd.getValue().getClass())).map(lfd -> lfd.getValue().toString()).collect(Collectors.joining("\n"));
+
+    return new ConsolidatedLicense() {
+      {
+        this.fulfillments = fulfillmentRecordset.getFulfillments();
+
+        fulfillmentRecordset.getFulfillments().stream().findAny().ifPresent(fid -> {
+          this.licFiles = makeLicenseFiles(fid.getLicenseTechnology().getLicenseFileDefinitions(), license, null);
+        });
+      }
+    };
+  }
+
+  private <T> T except(final Class<T> type, final String message) {
+    throw new RuntimeException(message + " | " + type.getName());
+  }
+
+  @Override
+  public LicenseFileDefinitionMap generateLicenseFilenames(final GeneratorRequest fileRec) throws LicGeneratorException {
+
+    return except(LicenseFileDefinitionMap.class, "generateLicenseFilenames not implemented");
+  }
+
+  @Override
+  public LicenseFileDefinitionMap generateConsolidatedLicenseFilenames(final ConsolidatedLicenseResquest clRec) throws LicGeneratorException {
+    return except(LicenseFileDefinitionMap.class, "generateConsolidatedLicenseFilenames not implemented");
+  }
+
+  @Override
+  public String generateCustomHostIdentifier(final HostIdRequest hostIdReq) throws LicGeneratorException {
+    return except(String.class, "generateCustomHostIdentifier not implemented");
+  }
+
   public abstract String technologyName();
+
+  public abstract String technologyId();
 }

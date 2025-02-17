@@ -7,16 +7,13 @@ import com.revenera.gcs.utils.Diagnostics;
 import com.revenera.gcs.utils.GeneratorImplementor;
 import com.revenera.gcs.utils.Log;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
-import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -26,7 +23,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class Application implements ServletContextListener {
   private static final Log logger = Log.create(Application.class);
 
-  private String executable;
+  private String web_inf;
 
   /** instance */
   private static final AtomicReference<Application> singleton = new AtomicReference<>();
@@ -76,8 +73,8 @@ public class Application implements ServletContextListener {
 
     logger.me(this);
 
-    this.build = "1010";
-    this.version = "2025.01.31";
+    this.build = "1017";
+    this.version = "2025.02.17";
 
     singleton.getAndSet(this);
 
@@ -86,7 +83,7 @@ public class Application implements ServletContextListener {
 
 
   public Path getResourcePath(final String...parts) {
-    return Paths.get(this.executable, parts);
+    return Paths.get(this.web_inf, parts);
   }
 
   @Override
@@ -96,7 +93,8 @@ public class Application implements ServletContextListener {
     try {
       logAttributeNames(event);
 
-      this.executable = event.getServletContext().getRealPath("/WEB-INF");
+      this.web_inf = event.getServletContext().getRealPath("/WEB-INF");
+
       logger.array(Log.Level.info, "resources", getResourcePath());;
 
       final AnnotationManager manager = new AnnotationManager();

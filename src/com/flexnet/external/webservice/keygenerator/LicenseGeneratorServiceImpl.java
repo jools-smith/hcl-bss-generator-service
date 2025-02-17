@@ -17,7 +17,7 @@ public class LicenseGeneratorServiceImpl extends ServiceBase implements LicenseG
   @Override
   public PingResponse ping(final PingRequest payload) throws LicGeneratorException {
     super.logger.in();
-    super.logger.yaml(Log.Level.trace, payload);
+    //super.logger.yaml(Log.Level.trace, payload);
     final Token token = createDiagnosticsToken();
     try {
       return Application.getInstance().getImplementorFactory().getDefaultImplementor().ping(payload);
@@ -33,7 +33,7 @@ public class LicenseGeneratorServiceImpl extends ServiceBase implements LicenseG
   @Override
   public Status validateProduct(final ProductRequest payload) throws LicGeneratorException {
     super.logger.in();
-    super.logger.yaml(Log.Level.trace, payload);
+    //super.logger.yaml(Log.Level.trace, payload);
     final Token token = createDiagnosticsToken();
     try {
       final String tech = super.getLicenseTechnology(payload);
@@ -51,7 +51,7 @@ public class LicenseGeneratorServiceImpl extends ServiceBase implements LicenseG
   @Override
   public Status validateLicenseModel(final LicenseModelRequest payload) throws LicGeneratorException {
     super.logger.in();
-    super.logger.yaml(Log.Level.trace, payload);
+    //super.logger.yaml(Log.Level.trace, payload);
     final Token token = createDiagnosticsToken();
     try {
       final String tech = super.getLicenseTechnology(payload);
@@ -69,7 +69,7 @@ public class LicenseGeneratorServiceImpl extends ServiceBase implements LicenseG
   @Override
   public GeneratorResponse generateLicense(final GeneratorRequest payload) throws LicGeneratorException {
     super.logger.in();
-    super.logger.yaml(Log.Level.trace, payload);
+    //super.logger.yaml(Log.Level.trace, payload);
     final Token token = createDiagnosticsToken();
 
     try {
@@ -88,7 +88,7 @@ public class LicenseGeneratorServiceImpl extends ServiceBase implements LicenseG
   @Override
   public ConsolidatedLicense consolidateFulfillments(final FulfillmentRecordSet payload) throws LicGeneratorException {
     super.logger.in();
-    super.logger.yaml(Log.Level.trace, payload);
+    //super.logger.yaml(Log.Level.trace, payload);
     final Token token = createDiagnosticsToken();
     try {
       final String tech = super.getLicenseTechnology(payload);
@@ -104,10 +104,9 @@ public class LicenseGeneratorServiceImpl extends ServiceBase implements LicenseG
   }
 
   @Override
-  public LicenseFileDefinitionMap generateLicenseFilenames(final GeneratorRequest payload)
-      throws LicGeneratorException {
+  public LicenseFileDefinitionMap generateLicenseFilenames(final GeneratorRequest payload) throws LicGeneratorException {
     super.logger.in();
-    super.logger.yaml(Log.Level.trace, payload);
+    //super.logger.yaml(Log.Level.trace, payload);
     final Token token = createDiagnosticsToken();
 
     try {
@@ -128,7 +127,7 @@ public class LicenseGeneratorServiceImpl extends ServiceBase implements LicenseG
   public LicenseFileDefinitionMap generateConsolidatedLicenseFilenames(final ConsolidatedLicenseResquest payload)
       throws LicGeneratorException {
     super.logger.in();
-    super.logger.yaml(Log.Level.trace, payload);
+    //super.logger.yaml(Log.Level.trace, payload);
     final Token token = createDiagnosticsToken();
 
     try {
@@ -147,7 +146,7 @@ public class LicenseGeneratorServiceImpl extends ServiceBase implements LicenseG
   @Override
   public String generateCustomHostIdentifier(final HostIdRequest payload) throws LicGeneratorException {
     super.logger.in();
-    super.logger.yaml(Log.Level.trace, payload);
+    //super.logger.yaml(Log.Level.trace, payload);
     final Token token = createDiagnosticsToken();
 
     try {

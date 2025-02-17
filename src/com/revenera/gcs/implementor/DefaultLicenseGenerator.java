@@ -14,8 +14,13 @@ public final class DefaultLicenseGenerator extends AbstractImplementor {
   private final static Log logger = Log.create(DefaultLicenseGenerator.class);
 
   @Override
+  public String technologyId() {
+    return ImplementorFactory.default_technology_id;
+  }
+
+  @Override
   public String technologyName() {
-    return ImplementorFactory.default_technology_name;
+    return "Default License Technology";
   }
 
   @Override
