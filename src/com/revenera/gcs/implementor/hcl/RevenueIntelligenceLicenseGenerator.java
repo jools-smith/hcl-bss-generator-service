@@ -110,8 +110,10 @@ public class RevenueIntelligenceLicenseGenerator extends AbstractImplementor {
     return "RI";
   }
 
-  private static final String licenseFileName = "License";
-  private static final String signatureFileName = "Signature";
+  private enum RIFileNames {
+    License,
+    Signature
+  }
 
   private String signLicense(final List<String> lines) {
     logger.in();
@@ -157,7 +159,7 @@ public class RevenueIntelligenceLicenseGenerator extends AbstractImplementor {
   public GeneratorResponse generateLicense(final GeneratorRequest request) throws LicGeneratorException {
     logger.in();
 
-    logger.yaml(Log.Level.debug, request);
+//    logger.yaml(Log.Level.debug, request);
 
     final List<FeatureLine> licenseElements = request
             .getEntitledProducts().stream()
@@ -165,17 +167,19 @@ public class RevenueIntelligenceLicenseGenerator extends AbstractImplementor {
             .map(x -> FeatureLine.create(x, request.getStartDate(), request.getExpirationDate()))
             .collect(Collectors.toList());
 
-
-    logger.yaml(Log.Level.debug, licenseElements);
-
     return new GeneratorResponse() {
       {
-        this.licenseFiles = makeLicenseFiles(
-                request.getLicenseTechnology().getLicenseFileDefinitions(),
-                Utils.safeSerializeYaml(licenseElements),
-                null);
+        this.licenseFiles = Collections.singletonList(new LicenseFileMapItem() {
+          {
+            name = RIFileNames.License.toString();
+            value = Utils.safeSerializeYaml(licenseElements);
+          }
+        });
+//        logger.yaml(Log.Level.debug, this.licenseFiles);
 
         this.complete = true;
+
+        logger.yaml(Log.Level.debug, this);
       }
     };
   }
@@ -184,66 +188,70 @@ public class RevenueIntelligenceLicenseGenerator extends AbstractImplementor {
   @Override
   public ConsolidatedLicense consolidateFulfillments(final FulfillmentRecordSet request) throws LicGeneratorException {
 
-//    logger.yaml(Log.Level.info, request);
+    logger.array(Log.Level.debug, Application.getInstance().getVersionDate(), Application.getInstance().getBuildSequence());
 
     final Map<String, FeatureLine> licenseElements = new HashMap<>();
 
-    request.getFulfillments().forEach(fid -> {
-//      logger.array(Log.Level.debug, "fid", fid.getFulfillmentId());
+    request.getFulfillments().stream()
+           .flatMap(fid -> fid.getLicenseFiles().stream())
+           .filter(file -> file.getName().equals(RIFileNames.License.toString()))
+           .forEach(file -> {
+              final List<FeatureLine> lines = FeatureLine.deserializeList(file.getValue().toString());
 
-      fid.getLicenseFiles().forEach(file -> {
+              lines.forEach(line -> {
+                final String key = line.key();
 
-        if (file.getName().equals(licenseFileName)) {
-//          logger.array(Log.Level.debug, "file", file.getName(), file.getValue());
+                if (!licenseElements.containsKey(key)) {
+                  licenseElements.put(key, line);
+                }
+                else {
+                  licenseElements.get(key).featureCount += line.featureCount;
+                }
+              });
+            });
 
-          final List<FeatureLine> lines = FeatureLine.deserializeList(file.getValue().toString());
-//          logger.yaml(Log.Level.debug, lines);
-
-          lines.forEach(line -> {
-            final String key = line.key();
-//            logger.array(Log.Level.debug, "key", key);
-
-            if (!licenseElements.containsKey(key)) {
-              licenseElements.put(key, line);
-            }
-            else {
-              licenseElements.get(key).featureCount += line.featureCount;
-            }
-          });
-        }
-      });
-    });
-
-    logger.yaml(Log.Level.debug, licenseElements);
-
-
-    request.getFulfillments().stream().findAny().ifPresent(fid -> {
-      logger.yaml(Log.Level.debug, fid);
-    });
+//    request.getFulfillments().forEach(fid -> {
+//
+//      fid.getLicenseFiles().forEach(file -> {
+//
+//        if (file.getName().equals(RIFileNames.License.toString())) {
+//
+//          final List<FeatureLine> lines = FeatureLine.deserializeList(file.getValue().toString());
+//
+//          lines.forEach(line -> {
+//            final String key = line.key();
+//
+//            if (!licenseElements.containsKey(key)) {
+//              licenseElements.put(key, line);
+//            }
+//            else {
+//              licenseElements.get(key).featureCount += line.featureCount;
+//            }
+//          });
+//        }
+//      });
+//    });
 
     return new ConsolidatedLicense() {
       {
         this.fulfillments = request.getFulfillments();
 
-        request.getFulfillments().stream().findAny().ifPresent(fid -> {
-          this.licFiles = makeLicenseFiles(fid.getLicenseTechnology().getLicenseFileDefinitions(), Utils.safeSerializeYaml(licenseElements), null);
-        });
+        this.licFiles = Arrays.asList(
+          new LicenseFileMapItem() {
+            {
+              this.name = RIFileNames.License.toString();
+              this.value = Utils.safeSerializeYaml(licenseElements);
+            }
+          },
+          new LicenseFileMapItem() {
+            {
+              this.name = RIFileNames.Signature.toString();
+              this.value = "SIGNATURE";
+            }
+          }
+        );
 
-//        this.licFiles = new ArrayList<>();
-//
-//        this.licFiles.add(new LicenseFileMapItem() {
-//          {
-//            this.name = licenseFileName;
-//            this.value = "LICENSE";//Utils.safeSerializeYaml(licenseElements);
-//          }
-//        });
-//
-//        this.licFiles.add(new LicenseFileMapItem() {
-//          {
-//            this.name = signatureFileName;
-//            this.value = "SIGNATURE";
-//          }
-//        });
+//        logger.yaml(Log.Level.debug, this.licFiles);
 
       }
     };
