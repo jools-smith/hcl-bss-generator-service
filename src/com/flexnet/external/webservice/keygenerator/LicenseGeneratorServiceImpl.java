@@ -17,10 +17,12 @@ public class LicenseGeneratorServiceImpl extends ServiceBase implements LicenseG
   @Override
   public PingResponse ping(final PingRequest payload) throws LicGeneratorException {
     super.logger.in();
-    //super.logger.yaml(Log.Level.trace, payload);
+
+    super.logger.yaml(Log.Level.trace, payload);
+
     final Token token = createDiagnosticsToken();
     try {
-      return Application.getInstance().getImplementorFactory().getDefaultImplementor().ping(payload);
+      return Application.getInstance().getImplementorFactory().getImplementor(payload.getStr()).ping(payload);
     }
     catch (final Throwable t) {
       throw new LicGeneratorException(t.getMessage(), this.serviceException.apply(t));

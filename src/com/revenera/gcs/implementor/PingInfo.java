@@ -3,13 +3,15 @@ package com.revenera.gcs.implementor;
 import org.apache.commons.lang3.SystemUtils;
 
 public class PingInfo {
-  public class OS {
+//  public String version;
+
+  public static class OS {
     public final String name = SystemUtils.OS_NAME;
     public final String version = SystemUtils.OS_VERSION;
     public final String architecture = SystemUtils.OS_ARCH;
   }
 
-  public class ENV {
+  public static class ENV {
     public final Integer availableProcessors;
     public final Long freeMemory;
     public final Long totalMemory;

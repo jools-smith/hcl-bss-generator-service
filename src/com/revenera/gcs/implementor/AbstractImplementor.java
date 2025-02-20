@@ -2,26 +2,30 @@ package com.revenera.gcs.implementor;
 
 import com.flexnet.external.type.*;
 import com.flexnet.external.webservice.keygenerator.LicGeneratorException;
-import com.revenera.gcs.utils.Log;
-import com.revenera.gcs.Application;
 import com.flexnet.external.webservice.keygenerator.LicenseGeneratorServiceInterface;
+import com.revenera.gcs.Application;
+import com.revenera.gcs.utils.Log;
 import com.revenera.gcs.utils.Utils;
+import org.apache.commons.lang3.SystemUtils;
 
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 public abstract class AbstractImplementor implements LicenseGeneratorServiceInterface {
 
   protected final Log logger = Log.create(this.getClass());
+
+  static protected <T> T raiseLicGeneratorException(final Throwable t) throws LicGeneratorException {
+    throw new LicGeneratorException("unexpected exception", new SvcException() {
+      {
+        this.message = t.getMessage();
+        this.name = t.getClass().getSimpleName();
+      }
+    });
+  }
 
   protected List<LicenseFileMapItem> makeLicenseFiles(final List<LicenseFileDefinition> files, final String text, final byte[] bytes) {
     return new ArrayList<LicenseFileMapItem>() {
@@ -56,63 +60,37 @@ public abstract class AbstractImplementor implements LicenseGeneratorServiceInte
     };
   }
 
-  void sign() {
-    logger.in();
+  @Override
+  public PingResponse ping(final PingRequest request) {
     try {
+      logger.in();
 
-      final Path exepath = Application.singleton().getResourcePath("executable", "Test.exe");
-      logger.array(Log.Level.info, "executable path", exepath.toString());
+      return new PingResponse() {
+        {
+          final PingInfo pinfo = PingInfo.create();
 
-      final Path filepath = Application.singleton().getResourcePath("licenses", UUID.randomUUID() + ".lic");
-      logger.array(Log.Level.info, "file path", filepath.toString());
+          this.info = Utils.safeSerializeYaml(pinfo);
 
-      final Instant now = Instant.now();
-
-
-      final String exec = String.format("\"%s\" \"%s\" %s", exepath.toString(), filepath.toString(), now.toString());
-
-      logger.array(Log.Level.info, "exec", exec);
-      final Process process = Runtime.getRuntime().exec(exec);
-
-      logger.array(Log.Level.info, "process", "waiting", process.isAlive(),
-                   Duration.between(now, Instant.now()),toString());
-      process.waitFor();
-
-      logger.array(Log.Level.info, "process", "finished", process.exitValue(),
-                   Duration.between(now, Instant.now()),toString());
+          this.str = String.format("%s | %s | %s | %s | %s | %s | %s | %s | %s | %s",
+                                   logger.type().getSimpleName(),
+                                   Application.getInstance().getVersionDate(),
+                                   Application.getInstance().getBuildSequence(),
+                                   technologyId(),
+                                   pinfo.system.name,
+                                   pinfo.system.version,
+                                   pinfo.system.architecture,
+                                   pinfo.hostName,
+                                   pinfo.userName,
+                                   Application.getInstance().getResourcePath().toString());
 
 
-      try (InputStream fileStream = Files.newInputStream(filepath, StandardOpenOption.DELETE_ON_CLOSE)) {
-        logger.log(Log.Level.info, "opened license file");
-      }
-    }
-    catch (final Throwable t) {
-      logger.exception(t);
+          this.processedTime = Instant.now().toString();
+        }
+      };
     }
     finally {
       logger.out();
     }
-  }
-
-  @Override
-  public PingResponse ping(final PingRequest request) {
-    logger.in();
-
-    sign();
-
-    return new PingResponse() {
-      {
-        this.info = Utils.safeSerializeYaml(PingInfo.create());
-
-        this.str = String.format("%s | %s | %s | %s",
-                                 logger.type().getSimpleName(),
-                                 Application.getInstance().getVersionDate(),
-                                 Application.getInstance().getBuildSequence(),
-                                 technologyId());
-
-        this.processedTime = Instant.now().toString();
-      }
-    };
   }
 
   @Override

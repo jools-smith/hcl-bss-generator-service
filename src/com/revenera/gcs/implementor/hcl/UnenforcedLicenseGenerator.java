@@ -8,8 +8,8 @@ import com.revenera.gcs.utils.GeneratorImplementor;
 
 import java.time.Instant;
 
-@GeneratorImplementor(technology = "ULT")
-public class NoLicenseGenerator extends AbstractImplementor {
+@GeneratorImplementor(technology = "NONE")
+public class UnenforcedLicenseGenerator extends AbstractImplementor {
   @Override
   public String technologyName() {
     return "Unenforced license technology";
@@ -17,7 +17,7 @@ public class NoLicenseGenerator extends AbstractImplementor {
 
   @Override
   public String technologyId() {
-    return "ULT";
+    return "NONE";
   }
 
   @Override
