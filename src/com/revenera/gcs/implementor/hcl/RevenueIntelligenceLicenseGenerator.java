@@ -69,6 +69,22 @@ class FeatureLine {
     };
   }
 
+  @Override
+  public String toString() {
+    final StringBuilder bfr = new StringBuilder();
+    bfr.append(featureName)
+       .append(" ")
+       .append(featureCount)
+       .append(" ");
+
+    if (this.expirationDate > 0) {
+      bfr.append(new Date(this.expirationDate).toInstant().toString())
+         .append(" ");;
+    }
+
+    return bfr.toString();
+  }
+
   public void add(final FeatureLine value) {
     if (key().equals(value.key())) {
       this.featureCount += value.featureCount;
@@ -154,7 +170,6 @@ public class RevenueIntelligenceLicenseGenerator extends AbstractImplementor {
     }
   }
 
-  //TODO - update the formatting inline with what Tulio has posted
   @Override
   public GeneratorResponse generateLicense(final GeneratorRequest request) throws LicGeneratorException {
     logger.in();
@@ -190,7 +205,7 @@ public class RevenueIntelligenceLicenseGenerator extends AbstractImplementor {
 
     logger.array(Log.Level.debug, Application.getInstance().getVersionDate(), Application.getInstance().getBuildSequence());
 
-    final Map<String, FeatureLine> licenseElements = new HashMap<>();
+    final Map<String, FeatureLine> licenseElements = new TreeMap<>();
 
     request.getFulfillments().stream()
            .flatMap(fid -> fid.getLicenseFiles().stream())
@@ -210,27 +225,10 @@ public class RevenueIntelligenceLicenseGenerator extends AbstractImplementor {
               });
             });
 
-//    request.getFulfillments().forEach(fid -> {
-//
-//      fid.getLicenseFiles().forEach(file -> {
-//
-//        if (file.getName().equals(RIFileNames.License.toString())) {
-//
-//          final List<FeatureLine> lines = FeatureLine.deserializeList(file.getValue().toString());
-//
-//          lines.forEach(line -> {
-//            final String key = line.key();
-//
-//            if (!licenseElements.containsKey(key)) {
-//              licenseElements.put(key, line);
-//            }
-//            else {
-//              licenseElements.get(key).featureCount += line.featureCount;
-//            }
-//          });
-//        }
-//      });
-//    });
+    // build intermediate format
+
+    final String str = licenseElements.values().stream().map(FeatureLine::toString).collect(Collectors.joining("\n"));
+    logger.yaml(Log.Level.debug, str);
 
     return new ConsolidatedLicense() {
       {
@@ -240,7 +238,9 @@ public class RevenueIntelligenceLicenseGenerator extends AbstractImplementor {
           new LicenseFileMapItem() {
             {
               this.name = RIFileNames.License.toString();
-              this.value = Utils.safeSerializeYaml(licenseElements);
+              this.value = licenseElements.values().stream()
+                                          .map(FeatureLine::toString)
+                                          .collect(Collectors.joining("\n"));
             }
           },
           new LicenseFileMapItem() {
@@ -252,7 +252,6 @@ public class RevenueIntelligenceLicenseGenerator extends AbstractImplementor {
         );
 
 //        logger.yaml(Log.Level.debug, this.licFiles);
-
       }
     };
   }
