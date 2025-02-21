@@ -24,10 +24,7 @@ public class ImplementorFactory {
     return this.implementors.get(default_technology_id);
   }
 
-  public LicenseGeneratorServiceInterface getImplementor(final String _id) {
-
-    //TODO:
-    final String id = _id.equals("FRI") ? "RI" : _id;
+  public LicenseGeneratorServiceInterface getImplementor(final String id) {
 
     if (this.implementors.containsKey(id)) {
       final LicenseGeneratorServiceInterface impl = this.implementors.get(id);

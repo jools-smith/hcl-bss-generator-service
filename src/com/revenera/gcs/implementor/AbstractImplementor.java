@@ -6,7 +6,6 @@ import com.flexnet.external.webservice.keygenerator.LicenseGeneratorServiceInter
 import com.revenera.gcs.Application;
 import com.revenera.gcs.utils.Log;
 import com.revenera.gcs.utils.Utils;
-import org.apache.commons.lang3.SystemUtils;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -73,7 +72,7 @@ public abstract class AbstractImplementor implements LicenseGeneratorServiceInte
 
           this.str = String.format("%s | %s | %s | %s | %s | %s | %s | %s | %s | %s",
                                    logger.type().getSimpleName(),
-                                   Application.getInstance().getVersionDate(),
+                                   Application.getInstance().getBuildDate(),
                                    Application.getInstance().getBuildSequence(),
                                    technologyId(),
                                    pinfo.system.name,

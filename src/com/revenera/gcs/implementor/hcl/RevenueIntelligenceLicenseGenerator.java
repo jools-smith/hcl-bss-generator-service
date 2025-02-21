@@ -10,6 +10,7 @@ import com.revenera.gcs.utils.GeneratorImplementor;
 import com.revenera.gcs.utils.Log;
 import com.revenera.gcs.utils.Utils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.nio.charset.StandardCharsets;
@@ -17,6 +18,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 class Resources {
@@ -43,7 +45,7 @@ class Resources {
 class FeatureLine {
   @JsonIgnore
   public String key() {
-    return String.format("%s|%s|%d", this.featureName, this.featureVersion, this.expirationDate);
+    return String.format("%s|%s|%d|%s", this.featureName, this.featureVersion, this.expirationDate, this.ipAddress);
   }
 
   static long toLong(final XMLGregorianCalendar date) {
@@ -54,17 +56,23 @@ class FeatureLine {
   public String featureVersion;
   public long featureCount;
   public long expirationDate;
+  public String ipAddress;
 
   public FeatureLine() {
   }
 
-  public static FeatureLine create(final com.flexnet.external.type.Feature feature, final XMLGregorianCalendar startDate, final XMLGregorianCalendar expiration) {
+  public boolean hashSubnetMask() {
+    return StringUtils.isNotEmpty(this.ipAddress);
+  }
+
+  public static FeatureLine create(final com.flexnet.external.type.Feature feature, final XMLGregorianCalendar startDate, final XMLGregorianCalendar expiration, final String subnet) {
     return new FeatureLine() {
       {
         this.featureName = feature.getName();
         this.featureVersion = feature.getVersion();
         this.featureCount = feature.getCount();
         this.expirationDate = toLong(expiration);
+        this.ipAddress = subnet;
       }
     };
   }
@@ -74,12 +82,17 @@ class FeatureLine {
     final StringBuilder bfr = new StringBuilder();
     bfr.append(featureName)
        .append(" ")
-       .append(featureCount)
-       .append(" ");
+       .append(featureCount);
+
 
     if (this.expirationDate > 0) {
-      bfr.append(new Date(this.expirationDate).toInstant().toString())
-         .append(" ");;
+      bfr.append(" ")
+         .append(new Date(this.expirationDate).toInstant().toString());
+    }
+
+    if (hashSubnetMask()) {
+      bfr.append(" ")
+         .append(this.ipAddress);
     }
 
     return bfr.toString();
@@ -126,9 +139,10 @@ public class RevenueIntelligenceLicenseGenerator extends AbstractImplementor {
     return "RI";
   }
 
-  private enum RIFileNames {
+  private enum Strings {
     License,
-    Signature
+    Signature,
+    SUBNET_MASK
   }
 
   private String signLicense(final List<String> lines) {
@@ -176,17 +190,30 @@ public class RevenueIntelligenceLicenseGenerator extends AbstractImplementor {
 
 //    logger.yaml(Log.Level.debug, request);
 
+//    logger.yaml(Log.Level.debug, request);
+
+    final AtomicReference<String> subnet = new AtomicReference<>();
+
+    request.getLicenseModel()
+           .getFulfillmentTimeAttributes()
+           .getAttributes().stream()
+           .filter(x -> x.getName().equals(Strings.SUBNET_MASK.toString()))
+           .findAny()
+           .ifPresent(att -> {
+              subnet.set(att.getValue());
+            });
+
     final List<FeatureLine> licenseElements = request
             .getEntitledProducts().stream()
             .flatMap(x -> x.getFeatures().stream())
-            .map(x -> FeatureLine.create(x, request.getStartDate(), request.getExpirationDate()))
+            .map(x -> FeatureLine.create(x, request.getStartDate(), request.getExpirationDate(), subnet.get()))
             .collect(Collectors.toList());
 
     return new GeneratorResponse() {
       {
         this.licenseFiles = Collections.singletonList(new LicenseFileMapItem() {
           {
-            name = RIFileNames.License.toString();
+            name = Strings.License.toString();
             value = Utils.safeSerializeYaml(licenseElements);
           }
         });
@@ -203,13 +230,13 @@ public class RevenueIntelligenceLicenseGenerator extends AbstractImplementor {
   @Override
   public ConsolidatedLicense consolidateFulfillments(final FulfillmentRecordSet request) throws LicGeneratorException {
 
-    logger.array(Log.Level.debug, Application.getInstance().getVersionDate(), Application.getInstance().getBuildSequence());
+    logger.array(Log.Level.debug, Application.getInstance().getBuildDate(), Application.getInstance().getBuildSequence());
 
     final Map<String, FeatureLine> licenseElements = new TreeMap<>();
 
     request.getFulfillments().stream()
            .flatMap(fid -> fid.getLicenseFiles().stream())
-           .filter(file -> file.getName().equals(RIFileNames.License.toString()))
+           .filter(file -> file.getName().equals(Strings.License.toString()))
            .forEach(file -> {
               final List<FeatureLine> lines = FeatureLine.deserializeList(file.getValue().toString());
 
@@ -225,31 +252,19 @@ public class RevenueIntelligenceLicenseGenerator extends AbstractImplementor {
               });
             });
 
-    // build intermediate format
-
-    final String str = licenseElements.values().stream().map(FeatureLine::toString).collect(Collectors.joining("\n"));
-    logger.yaml(Log.Level.debug, str);
-
     return new ConsolidatedLicense() {
       {
         this.fulfillments = request.getFulfillments();
 
-        this.licFiles = Arrays.asList(
-          new LicenseFileMapItem() {
-            {
-              this.name = RIFileNames.License.toString();
-              this.value = licenseElements.values().stream()
-                                          .map(FeatureLine::toString)
-                                          .collect(Collectors.joining("\n"));
-            }
-          },
-          new LicenseFileMapItem() {
-            {
-              this.name = RIFileNames.Signature.toString();
-              this.value = "SIGNATURE";
-            }
+        this.licFiles = Collections.singletonList(new LicenseFileMapItem() {
+          {
+            this.name = Strings.License.toString();
+            // build intermediate format
+            this.value = licenseElements.values().stream()
+                                        .map(FeatureLine::toString)
+                                        .collect(Collectors.joining("\n"));
           }
-        );
+        });
 
 //        logger.yaml(Log.Level.debug, this.licFiles);
       }

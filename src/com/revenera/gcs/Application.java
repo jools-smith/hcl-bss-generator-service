@@ -36,16 +36,20 @@ public class Application implements ServletContextListener {
     return singleton.get();
   }
 
-  /** build */
-  private final String build;
+  /** incremental build sequence */
+  private final String buildSequence;
   public String getBuildSequence() {
-    return build;
+    return buildSequence;
   }
 
-  /** version */
-  private final String version;
-  public String getVersionDate() {
-    return version;
+  /** build date */
+  private final String buildDate;
+  public String getBuildDate() {
+    return buildDate;
+  }
+
+  public String getVersion() {
+    return String.format("version | %s | %s", this.buildDate, this.buildSequence);
   }
 
   /** implementor factory */
@@ -73,12 +77,12 @@ public class Application implements ServletContextListener {
 
     logger.me(this);
 
-    this.build = "1055";
-    this.version = "2025.02.21";
+    this.buildSequence = "1065";
+    this.buildDate = "2025.02.22";
 
     singleton.getAndSet(this);
 
-    logger.log(Log.Level.info, String.format("version | %s | %s", version, build));
+    logger.log(Log.Level.info, getVersion());
   }
 
 
