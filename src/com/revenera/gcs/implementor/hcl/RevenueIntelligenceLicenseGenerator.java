@@ -65,12 +65,16 @@ class FeatureLine {
     return StringUtils.isNotEmpty(this.ipAddress);
   }
 
-  public static FeatureLine create(final com.flexnet.external.type.Feature feature, final XMLGregorianCalendar startDate, final XMLGregorianCalendar expiration, final String subnet) {
+  public static FeatureLine create(final com.flexnet.external.type.Feature feature,
+                                   final long fulfilmentCount,
+                                   final long quantityPerCopy,
+                                   final XMLGregorianCalendar expiration,
+                                   final String subnet) {
     return new FeatureLine() {
       {
         this.featureName = feature.getName();
         this.featureVersion = feature.getVersion();
-        this.featureCount = feature.getCount();
+        this.featureCount = feature.getCount() * fulfilmentCount * quantityPerCopy;
         this.expirationDate = toLong(expiration);
         this.ipAddress = subnet;
       }
@@ -190,7 +194,10 @@ public class RevenueIntelligenceLicenseGenerator extends AbstractImplementor {
 
 //    logger.yaml(Log.Level.debug, request);
 
-//    logger.yaml(Log.Level.debug, request);
+//    logger.yaml(Log.Level.debug, request
+//            .getEntitledProducts().stream()
+//            .flatMap(x -> x.getFeatures().stream())
+//            .collect(Collectors.toList()));
 
     final AtomicReference<String> subnet = new AtomicReference<>();
 
@@ -203,11 +210,24 @@ public class RevenueIntelligenceLicenseGenerator extends AbstractImplementor {
               subnet.set(att.getValue());
             });
 
-    final List<FeatureLine> licenseElements = request
-            .getEntitledProducts().stream()
-            .flatMap(x -> x.getFeatures().stream())
-            .map(x -> FeatureLine.create(x, request.getStartDate(), request.getExpirationDate(), subnet.get()))
-            .collect(Collectors.toList());
+    final List<FeatureLine> licenseElements = new ArrayList<>();
+
+    request.getEntitledProducts().forEach(prod -> {
+      prod.getFeatures().forEach(feature -> {
+        licenseElements.add(FeatureLine.create(
+                feature,
+                request.getFulfillCount(),
+                prod.getQuantityPerCopy(),
+                request.getExpirationDate(),
+                subnet.get()));
+      });
+    });
+
+//    final List<FeatureLine> licenseElements = request
+//            .getEntitledProducts().stream()
+//            .flatMap(x -> x.getFeatures().stream())
+//            .map(x -> FeatureLine.create(x, request.getStartDate(), request.getExpirationDate(), subnet.get()))
+//            .collect(Collectors.toList());
 
     return new GeneratorResponse() {
       {
