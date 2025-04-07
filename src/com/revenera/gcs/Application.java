@@ -28,6 +28,8 @@ public class Application implements ServletContextListener {
   /** instance */
   private static final AtomicReference<Application> singleton = new AtomicReference<>();
 
+
+  @SuppressWarnings("unused")
   public static Application singleton() {
     return singleton.get();
   }
@@ -77,8 +79,8 @@ public class Application implements ServletContextListener {
 
     logger.me(this);
 
-    this.buildSequence = "1068";
-    this.buildDate = "2025.03.17";
+    this.buildSequence = "1071";
+    this.buildDate = "2025.04.07";
 
     singleton.getAndSet(this);
 
@@ -99,7 +101,7 @@ public class Application implements ServletContextListener {
 
       this.web_inf = event.getServletContext().getRealPath("/WEB-INF");
 
-      logger.array(Log.Level.info, "resources", getResourcePath());;
+      logger.array(Log.Level.info, "resources", getResourcePath());
 
       final AnnotationManager manager = new AnnotationManager();
 

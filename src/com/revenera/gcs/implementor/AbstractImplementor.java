@@ -17,6 +17,7 @@ public abstract class AbstractImplementor implements LicenseGeneratorServiceInte
 
   protected final Log logger = Log.create(this.getClass());
 
+  @SuppressWarnings("unused")
   static protected <T> T raiseLicGeneratorException(final Throwable t) throws LicGeneratorException {
     throw new LicGeneratorException("unexpected exception", new SvcException() {
       {
@@ -32,24 +33,20 @@ public abstract class AbstractImplementor implements LicenseGeneratorServiceInte
         files.forEach(lfd -> {
           switch (lfd.getLicenseStorageType()) {
             case TEXT:
-              Optional.ofNullable(text).ifPresent(license -> {
-                this.add(new LicenseFileMapItem() {
-                  {
-                    this.name = lfd.getName();
-                    this.value = license;
-                  }
-                });
-              });
+              Optional.ofNullable(text).ifPresent(license -> this.add(new LicenseFileMapItem() {
+                {
+                  this.name = lfd.getName();
+                  this.value = license;
+                }
+              }));
               break;
             case BINARY:
-              Optional.ofNullable(bytes).ifPresent(license -> {
-                this.add(new LicenseFileMapItem() {
-                  {
-                    this.name = lfd.getName();
-                    this.value = license;
-                  }
-                });
-              });
+              Optional.ofNullable(bytes).ifPresent(license -> this.add(new LicenseFileMapItem() {
+                {
+                  this.name = lfd.getName();
+                  this.value = license;
+                }
+              }));
               break;
             default:
               throw new RuntimeException("invalid license file type");
@@ -120,9 +117,8 @@ public abstract class AbstractImplementor implements LicenseGeneratorServiceInte
       {
         this.fulfillments = fulfillmentRecordset.getFulfillments();
 
-        fulfillmentRecordset.getFulfillments().stream().findAny().ifPresent(fid -> {
-          this.licFiles = makeLicenseFiles(fid.getLicenseTechnology().getLicenseFileDefinitions(), license, null);
-        });
+        fulfillmentRecordset.getFulfillments().stream().findAny().ifPresent(fid -> this.licFiles =
+                makeLicenseFiles(fid.getLicenseTechnology().getLicenseFileDefinitions(), license, null));
       }
     };
   }
@@ -147,6 +143,7 @@ public abstract class AbstractImplementor implements LicenseGeneratorServiceInte
     return except(String.class, "generateCustomHostIdentifier not implemented");
   }
 
+  @SuppressWarnings("unused")
   public abstract String technologyName();
 
   public abstract String technologyId();

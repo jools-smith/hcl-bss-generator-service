@@ -8,6 +8,7 @@ import com.revenera.gcs.utils.GeneratorImplementor;
 
 import java.time.Instant;
 
+@SuppressWarnings("unused")
 @GeneratorImplementor(technology = "NONE")
 public class UnenforcedLicenseGenerator extends AbstractImplementor {
   @Override

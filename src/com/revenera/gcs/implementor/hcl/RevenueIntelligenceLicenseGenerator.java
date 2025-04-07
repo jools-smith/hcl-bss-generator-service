@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 class Resources {
@@ -111,7 +112,8 @@ class FeatureLine {
   static final TypeReference<List<FeatureLine>> featureLineListType = new TypeReference<List<FeatureLine>>() {
   };
 
-  public static String serailizeList(final List<FeatureLine> features) {
+  @SuppressWarnings("unused")
+  public static String serializeList(final List<FeatureLine> features) {
     try {
       return Utils.yaml_mapper.writeValueAsString(features);
     }
@@ -130,6 +132,7 @@ class FeatureLine {
   }
 }
 
+@SuppressWarnings("unused")
 @GeneratorImplementor(technology = "RI")
 public class RevenueIntelligenceLicenseGenerator extends AbstractImplementor {
 
@@ -146,7 +149,8 @@ public class RevenueIntelligenceLicenseGenerator extends AbstractImplementor {
   private enum Strings {
     License,
     Signature,
-    SUBNET_MASK
+    SUBNET_MASK,
+    SUBNET_MASK_CIDR_FORMAT
   }
 
   private String signLicense(final List<String> lines) {
@@ -188,6 +192,10 @@ public class RevenueIntelligenceLicenseGenerator extends AbstractImplementor {
     }
   }
 
+  static final Function<CustomAttributeDescriptor, Boolean> attribute_is_valid = x ->
+          StringUtils.isNotEmpty(x.getValue()) &&
+          StringUtils.equalsAny(x.getName(), Strings.SUBNET_MASK.toString(), Strings.SUBNET_MASK_CIDR_FORMAT.toString());
+
   @Override
   public GeneratorResponse generateLicense(final GeneratorRequest request) throws LicGeneratorException {
     logger.in();
@@ -204,24 +212,18 @@ public class RevenueIntelligenceLicenseGenerator extends AbstractImplementor {
     request.getLicenseModel()
            .getFulfillmentTimeAttributes()
            .getAttributes().stream()
-           .filter(x -> x.getName().equals(Strings.SUBNET_MASK.toString()))
+           .filter(attribute_is_valid::apply)
            .findAny()
-           .ifPresent(att -> {
-              subnet.set(att.getValue());
-            });
+           .ifPresent(att -> subnet.set(att.getValue()));
 
     final List<FeatureLine> licenseElements = new ArrayList<>();
 
-    request.getEntitledProducts().forEach(prod -> {
-      prod.getFeatures().forEach(feature -> {
-        licenseElements.add(FeatureLine.create(
-                feature,
-                request.getFulfillCount(),
-                prod.getQuantityPerCopy(),
-                request.getExpirationDate(),
-                subnet.get()));
-      });
-    });
+    request.getEntitledProducts().forEach(prod -> prod.getFeatures().forEach(feature -> licenseElements.add(FeatureLine.create(
+            feature,
+            request.getFulfillCount(),
+            prod.getQuantityPerCopy(),
+            request.getExpirationDate(),
+            subnet.get()))));
 
 //    final List<FeatureLine> licenseElements = request
 //            .getEntitledProducts().stream()
