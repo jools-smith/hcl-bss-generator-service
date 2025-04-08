@@ -50,8 +50,13 @@ public class Application implements ServletContextListener {
     return buildDate;
   }
 
-  public String getVersion() {
-    return String.format("version | %s | %s", this.buildDate, this.buildSequence);
+  private final String release;
+  public String getRelease() {
+    return buildDate;
+  }
+
+  public String getVersionString() {
+    return String.format("%s | %s | %s", this.buildDate, this.buildSequence, this.release);
   }
 
   /** implementor factory */
@@ -79,12 +84,14 @@ public class Application implements ServletContextListener {
 
     logger.me(this);
 
-    this.buildSequence = "1071";
-    this.buildDate = "2025.04.07";
+    this.buildSequence = "1072";
+    this.buildDate = "2025.04.08";
+    //TODO: -> GC
+    this.release = "DEVELOPMENT";
 
     singleton.getAndSet(this);
 
-    logger.log(Log.Level.info, getVersion());
+    logger.array(Log.Level.info, "version", getVersionString());
   }
 
 

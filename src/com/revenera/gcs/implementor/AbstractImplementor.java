@@ -67,10 +67,9 @@ public abstract class AbstractImplementor implements LicenseGeneratorServiceInte
 
           this.info = Utils.safeSerializeYaml(pinfo);
 
-          this.str = String.format("%s | %s | %s | %s | %s | %s | %s | %s | %s | %s",
+          this.str = String.format("%s | %s | %s | %s | %s | %s | %s | %s | %s",
                                    logger.type().getSimpleName(),
-                                   Application.getInstance().getBuildDate(),
-                                   Application.getInstance().getBuildSequence(),
+                                   Application.getInstance().getVersionString(),
                                    technologyId(),
                                    pinfo.system.name,
                                    pinfo.system.version,
@@ -78,7 +77,6 @@ public abstract class AbstractImplementor implements LicenseGeneratorServiceInte
                                    pinfo.hostName,
                                    pinfo.userName,
                                    Application.getInstance().getResourcePath().toString());
-
 
           this.processedTime = Instant.now().toString();
         }

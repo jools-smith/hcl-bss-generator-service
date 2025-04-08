@@ -200,13 +200,6 @@ public class RevenueIntelligenceLicenseGenerator extends AbstractImplementor {
   public GeneratorResponse generateLicense(final GeneratorRequest request) throws LicGeneratorException {
     logger.in();
 
-//    logger.yaml(Log.Level.debug, request);
-
-//    logger.yaml(Log.Level.debug, request
-//            .getEntitledProducts().stream()
-//            .flatMap(x -> x.getFeatures().stream())
-//            .collect(Collectors.toList()));
-
     final AtomicReference<String> subnet = new AtomicReference<>();
 
     request.getLicenseModel()
@@ -225,12 +218,6 @@ public class RevenueIntelligenceLicenseGenerator extends AbstractImplementor {
             request.getExpirationDate(),
             subnet.get()))));
 
-//    final List<FeatureLine> licenseElements = request
-//            .getEntitledProducts().stream()
-//            .flatMap(x -> x.getFeatures().stream())
-//            .map(x -> FeatureLine.create(x, request.getStartDate(), request.getExpirationDate(), subnet.get()))
-//            .collect(Collectors.toList());
-
     return new GeneratorResponse() {
       {
         this.licenseFiles = Collections.singletonList(new LicenseFileMapItem() {
@@ -239,11 +226,11 @@ public class RevenueIntelligenceLicenseGenerator extends AbstractImplementor {
             value = Utils.safeSerializeYaml(licenseElements);
           }
         });
-//        logger.yaml(Log.Level.debug, this.licenseFiles);
 
         this.complete = true;
 
-        logger.yaml(Log.Level.debug, this);
+        // debug
+        this.licenseFiles.forEach(file -> logger.array(Log.Level.debug, file.getName(), file.getValue()));
       }
     };
   }
@@ -288,7 +275,8 @@ public class RevenueIntelligenceLicenseGenerator extends AbstractImplementor {
           }
         });
 
-//        logger.yaml(Log.Level.debug, this.licFiles);
+        // debug
+        this.licFiles.forEach(file -> logger.array(Log.Level.debug, file.getName(), file.getValue()));
       }
     };
   }
