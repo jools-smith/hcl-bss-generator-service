@@ -1,7 +1,6 @@
 package com.revenera.gcs;
 
 import com.flexnet.external.type.*;
-import com.revenera.gcs.utils.Diagnostics.Token;
 import com.revenera.gcs.utils.Log;
 import com.revenera.gcs.utils.Utils;
 
@@ -66,12 +65,6 @@ public abstract class ServiceBase {
       this.logger.log(Log.Level.info, "license tech:" + tech.get().getName());
       return tech.get().getName();
     }
-  }
-
-  protected Token createDiagnosticsToken() {
-    final StackTraceElement frame = Thread.currentThread().getStackTrace()[2];
-    
-    return Application.getInstance().getDiagnostics().getToken(this.getClass(), frame.getMethodName());
   }
   
   public Function<Throwable, SvcException> serviceException = (throwable) -> new SvcException() {

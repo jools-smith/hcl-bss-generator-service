@@ -3,7 +3,6 @@ package com.revenera.gcs.implementor;
 import org.apache.commons.lang3.SystemUtils;
 
 public class PingInfo {
-//  public String version;
 
   public static class OS {
     public final String name = SystemUtils.OS_NAME;
@@ -27,11 +26,17 @@ public class PingInfo {
     }
   }
 
+  public static class PROPS {
+    public final String javaVersion = SystemUtils.JAVA_RUNTIME_VERSION;
+    public final String javaVendor = SystemUtils.JAVA_VENDOR;
+    public final String javaName = SystemUtils.JAVA_RUNTIME_NAME;
+    public final String hostName = SystemUtils.getHostName();
+    public final String userName = SystemUtils.USER_NAME;
+  }
+
   public final OS system = new OS();
   public final ENV environment = new ENV();
-  public final String hostName = SystemUtils.getHostName();
-  @SuppressWarnings("deprecation")
-  public final String userName = SystemUtils.getUserName();
+  public final PROPS props = new PROPS();
 
   PingInfo() {
 

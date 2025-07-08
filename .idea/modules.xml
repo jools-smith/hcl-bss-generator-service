@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/external-generator-service.iml" filepath="$PROJECT_DIR$/external-generator-service.iml" />
       <module fileurl="file://$PROJECT_DIR$/generated/generated.iml" filepath="$PROJECT_DIR$/generated/generated.iml" />
-      <module fileurl="file://$PROJECT_DIR$/hcl-bss-generator-service.iml" filepath="$PROJECT_DIR$/hcl-bss-generator-service.iml" />
     </modules>
   </component>
 </project>

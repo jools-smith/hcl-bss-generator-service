@@ -3,7 +3,6 @@ package com.revenera.gcs;
 import com.revenera.gcs.implementor.AbstractImplementor;
 import com.revenera.gcs.implementor.ImplementorFactory;
 import com.revenera.gcs.utils.AnnotationManager;
-import com.revenera.gcs.utils.Diagnostics;
 import com.revenera.gcs.utils.GeneratorImplementor;
 import com.revenera.gcs.utils.Log;
 
@@ -65,12 +64,6 @@ public class Application implements ServletContextListener {
     return implementorFactory;
   }
 
-  /** diagnostics */
-  private final Diagnostics diagnostics = new Diagnostics();
-  public Diagnostics getDiagnostics() {
-    return diagnostics;
-  }
-
   private void logAttributeNames(final ServletContextEvent event) {
     final Enumeration<String> itt = event.getServletContext().getAttributeNames();
     while (itt.hasMoreElements()) {
@@ -84,10 +77,10 @@ public class Application implements ServletContextListener {
 
     logger.me(this);
 
-    this.buildSequence = "1072";
-    this.buildDate = "2025.04.08";
-    //TODO: -> GC
-    this.release = "DEVELOPMENT";
+    this.buildSequence = "1021";
+    this.buildDate = "2025.07.08";
+    //TODO: -> GA
+    this.release = "BETA";
 
     singleton.getAndSet(this);
 

@@ -17,7 +17,7 @@ import javax.xml.ws.WebServiceFeature;
  * Generated source version: 2.2
  * 
  */
-@WebServiceClient(name = "LicenseGeneratorService", targetNamespace = "urn:keygenerator.webservice.external.flexnet.com", wsdlLocation = "file:/D:/gcs/hcl-bss-generator-service/schema/LicenseGeneratorService.wsdl")
+@WebServiceClient(name = "LicenseGeneratorService", targetNamespace = "urn:keygenerator.webservice.external.flexnet.com", wsdlLocation = "file:/C:/Users/juliansmith/OneDrive%20-%20Flexera,%20Inc/development/gcs/external-license-generator/schema/LicenseGeneratorService.wsdl")
 public class LicenseGeneratorService
     extends Service
 {
@@ -30,7 +30,7 @@ public class LicenseGeneratorService
         URL url = null;
         WebServiceException e = null;
         try {
-            url = new URL("file:/D:/gcs/hcl-bss-generator-service/schema/LicenseGeneratorService.wsdl");
+            url = new URL("file:/C:/Users/juliansmith/OneDrive%20-%20Flexera,%20Inc/development/gcs/external-license-generator/schema/LicenseGeneratorService.wsdl");
         } catch (MalformedURLException ex) {
             e = new WebServiceException(ex);
         }

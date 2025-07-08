@@ -3,6 +3,8 @@
         Web Services build file
     </description>
 
+    <property name="customer" value="acme"/>
+
     <property environment="env"/>
 
     <property name="BASE" location="."/>
@@ -13,8 +15,8 @@
     <property name="generated" location="${BASE}/generated"/>
     <property name="generated-src" location="${BASE}/generated/src"/>
     <property name="schema-loc" location="${BASE}/schema"/>
-    <property name="warfile" location="${BASE}/../hcltech-services.war"/>
-    <property name="zipped-sources" location="${BASE}/../hcltech-services.zip"/>
+    <property name="warfile" location="${BASE}/${customer}-services.war"/>
+    <property name="zipped-sources" location="${BASE}/${customer}-services.zip"/>
 
     <path id="licservice.classpath">
         <fileset dir="${BASE}/WebContent/WEB-INF/lib">
@@ -75,10 +77,6 @@
             <fileset dir="${schema-loc}"/>
         </copy>
         <jar jarfile="${warfile}" basedir="${dist}/war/build/"/>
-        <!-- <delete dir="${dist}" />
-        <delete dir="${generated-src}" />
-        <delete dir="${generated}" />
-        <delete dir="${build}" /> -->
 
         <zip destfile="${zipped-sources}" basedir="${BASE}"/>
     </target>
@@ -91,25 +89,6 @@
     </target>
 
     <target name="clean" description="clean up">
-        <!--
-            <fail message="${warfile} is not writeable. Did you check this file out?">
-              <condition>
-                <not>
-                  <isfileselected file="${warfile}">
-                    <writable />
-                  </isfileselected>
-                </not>
-              </condition>
-            </fail>
-            <fail message="${zipped-sources} is not writeable. Did you check this file out?">
-              <condition>
-                <not>
-                  <isfileselected file="${zipped-sources}">
-                    <writable />
-                  </isfileselected>
-                </not>
-              </condition>
-            </fail> -->
         <delete file="${warfile}"/>
         <delete file="${zipped-sources}"/>
         <delete dir="${build}"/>
